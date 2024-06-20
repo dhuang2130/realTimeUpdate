@@ -9,7 +9,6 @@ from watchdog.events import FileSystemEventHandler
 import time
 import os
 
-# Define the GUI application
 class App:
     def __init__(self, root):
         self.root = root
@@ -67,7 +66,6 @@ def parse_purchase(purchase, product_key):
     if isinstance(purchase, float) and pd.isna(purchase):
         return []
     purchase_str = str(purchase)
-    # Remove unwanted characters
     purchase_str = purchase_str.replace('Ã—', '').replace(',', '')
     items = re.findall(r'(\d+)\s([A-Z0-9-]+|\w+.*)', purchase_str)
     parsed_items = []
@@ -80,7 +78,6 @@ def parse_purchase(purchase, product_key):
 
 def update_tracking_file(sales_record_file_path, tracking_file_path):
     print("Reading tracking file...")
-    # Read the tracking file to get product codes
     if tracking_file_path.endswith('.xls'):
         tracking_df = pd.read_excel(tracking_file_path, sheet_name='Sheet1', engine='xlrd')
     else:
@@ -88,11 +85,9 @@ def update_tracking_file(sales_record_file_path, tracking_file_path):
 
     product_codes = tracking_df.iloc[:, 0].dropna().tolist()  # Assume the first column is the product code
 
-    # Initialize a dictionary to store the product quantities
     product_quantities = {code: 0 for code in product_codes}
 
     print("Reading product key from stats tab...")
-    # Read the product key from the stats tab
     if sales_record_file_path.endswith('.xls'):
         stats_df = pd.read_excel(sales_record_file_path, sheet_name='Stats', usecols=[1, 2], engine='xlrd')
     else:
@@ -101,14 +96,12 @@ def update_tracking_file(sales_record_file_path, tracking_file_path):
     product_key = dict(zip(stats_df.iloc[:, 1], stats_df.iloc[:, 0]))
 
     print("Reading sales record file...")
-    # Read the sales record file
     if sales_record_file_path.endswith('.xls'):
         sales_record_df = pd.read_excel(sales_record_file_path, sheet_name='Raw', engine='xlrd')
     else:
         sales_record_df = pd.read_excel(sales_record_file_path, sheet_name='Raw')
 
     print("Summing quantities for each product...")
-    # Parse and sum the quantities for each product
     for purchase in sales_record_df['Purchase']:
         items = parse_purchase(purchase, product_key)
         for item, quantity in items:
@@ -125,12 +118,10 @@ def update_tracking_file(sales_record_file_path, tracking_file_path):
                 ws.write(idx, 3, product_quantities[code])
         wb.save(tracking_file_path)
     else:
-        # Load the existing workbook
         workbook = load_workbook(tracking_file_path)
         sheet = workbook['Sheet1']
 
-        # Update the tracking file with the new quantities in the existing 'Sales' column (D column)
-        sales_column_index = 4  # Column D (1-indexed for openpyxl)
+        sales_column_index = 4  
         for idx, code in enumerate(product_codes, start=2):
             if code in product_quantities:
                 sheet.cell(row=idx, column=sales_column_index).value = product_quantities[code]
@@ -154,7 +145,6 @@ class SalesRecordHandler(FileSystemEventHandler):
             except PermissionError as e:
                 print(f"Permission error: {e}")
 
-# Run the GUI application
 if __name__ == "__main__":
     root = Tk()
     app = App(root)
