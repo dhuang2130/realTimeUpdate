@@ -3,8 +3,8 @@ import pandas as pd
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-illustrations_path = './data/Products/illustrations.xlsx'
-realtime_tracking_path = './data/realtime Tracking.xlsx'
+illustrations_path = '../data/Products/illustrations.xlsx'
+realtime_tracking_path = '../data/realtime Tracking.xlsx'
 
 class UpdateHandler(FileSystemEventHandler):
     def on_modified(self, event):
@@ -32,7 +32,7 @@ def update_realtime_tracking():
 if __name__ == "__main__":
     event_handler = UpdateHandler()
     observer = Observer()
-    observer.schedule(event_handler, path='./data/Products', recursive=False)
+    observer.schedule(event_handler, path='../data/Products', recursive=False)
     observer.start()
 
     print("Monitoring Manufacture started. Press Ctrl+C to stop.")

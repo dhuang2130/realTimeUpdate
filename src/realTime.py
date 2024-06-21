@@ -3,64 +3,10 @@ from openpyxl import load_workbook
 from xlrd import open_workbook
 from xlutils.copy import copy
 import re
-from tkinter import Tk, Label, Button, filedialog
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import time
 import os
-
-class App:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Sales Record Updater")
-
-        self.label1 = Label(root, text="Select the Sales Record File:")
-        self.label1.pack(pady=10)
-
-        self.select_sales_file_button = Button(root, text="Select Sales File", command=self.select_sales_file)
-        self.select_sales_file_button.pack(pady=5)
-
-        self.label2 = Label(root, text="Select the Tracking File:")
-        self.label2.pack(pady=10)
-
-        self.select_tracking_file_button = Button(root, text="Select Tracking File", command=self.select_tracking_file)
-        self.select_tracking_file_button.pack(pady=5)
-
-        self.run_button = Button(root, text="Run", command=self.run)
-        self.run_button.pack(pady=20)
-
-        self.sales_record_file_path = None
-        self.tracking_file_path = None
-
-    def select_sales_file(self):
-        self.sales_record_file_path = filedialog.askopenfilename(title="Select Sales Record File", filetypes=[("Excel files", "*.xls *.xlsx")])
-        self.label1.config(text=f"Sales Record File: {self.sales_record_file_path}")
-
-    def select_tracking_file(self):
-        self.tracking_file_path = filedialog.askopenfilename(title="Select Tracking File", filetypes=[("Excel files", "*.xls *.xlsx")])
-        self.label2.config(text=f"Tracking File: {self.tracking_file_path}")
-
-    def run(self):
-        if self.sales_record_file_path and self.tracking_file_path:
-            try:
-                update_tracking_file(self.sales_record_file_path, self.tracking_file_path)
-                print("Running initial update...")
-                event_handler = SalesRecordHandler(self.sales_record_file_path, self.tracking_file_path)
-                observer = Observer()
-                observer.schedule(event_handler, path=os.path.dirname(self.sales_record_file_path), recursive=False)
-                observer.start()
-                print("Started monitoring for changes...")
-                try:
-                    while True:
-                        time.sleep(1)
-                except KeyboardInterrupt:
-                    observer.stop()
-                    observer.join()
-                    print("Stopped monitoring for changes.")
-            except PermissionError as e:
-                print(f"Permission error: {e}")
-        else:
-            print("Please select both files.")
 
 def parse_purchase(purchase, product_key):
     if isinstance(purchase, float) and pd.isna(purchase):
@@ -146,6 +92,23 @@ class SalesRecordHandler(FileSystemEventHandler):
                 print(f"Permission error: {e}")
 
 if __name__ == "__main__":
-    root = Tk()
-    app = App(root)
-    root.mainloop()
+    sales_record_file_path = './data/Z2024SalesRecord.xlsx'
+    tracking_file_path = './data/realtime Tracking.xlsx'
+    
+    try:
+        update_tracking_file(sales_record_file_path, tracking_file_path)
+        print("Running initial update...")
+        event_handler = SalesRecordHandler(sales_record_file_path, tracking_file_path)
+        observer = Observer()
+        observer.schedule(event_handler, path=os.path.dirname(sales_record_file_path), recursive=False)
+        observer.start()
+        print("Started monitoring for changes...")
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            observer.stop()
+            observer.join()
+            print("Stopped monitoring for changes.")
+    except PermissionError as e:
+        print(f"Permission error: {e}")
